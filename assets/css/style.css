@@ -1,0 +1,250 @@
+/* Reset & Body */
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    margin: 0;
+
+    /* MODERNS GYM BACKGROUND (uzlabojums) */
+    background:
+        radial-gradient(circle at 20% 20%, rgba(0,0,0,0.05), transparent 40%),
+        radial-gradient(circle at 80% 0%, rgba(0,0,0,0.04), transparent 35%),
+        radial-gradient(circle at 50% 100%, rgba(0,0,0,0.03), transparent 40%),
+        linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+
+    min-height: 100vh;
+}
+
+/* Page title (Sporta zāle smaller) */
+.page-title {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.6em;
+}
+
+/* Navigation */
+nav {
+    background: #070707;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: white;
+    margin: 5px;
+    text-decoration: none;
+}
+
+nav a:hover,
+nav a:focus {
+    text-decoration: underline;
+    outline: none;
+}
+
+/* Calendar Wrapper */
+.calendar-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 25px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Calendar Container */
+#calendar {
+    width: 100%;
+    max-width: 1600px;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    font-size: 1.15em;
+    transition: 0.3s;
+
+    /* MODERNS SHADOW UZLABOJUMS */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* Month animation */
+#calendar.animate-left {
+    animation: slideLeft 0.4s ease;
+}
+#calendar.animate-right {
+    animation: slideRight 0.4s ease;
+}
+
+@keyframes slideLeft {
+    from { transform: translateX(40px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+    from { transform: translateX(-40px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+/* Pulse animation */
+#calendar.pulse {
+    animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+    50% { transform: scale(1.01); }
+}
+
+/* FullCalendar Title smaller */
+.fc-toolbar-title {
+    font-size: 1.7em;
+    font-weight: bold;
+}
+
+/* FullCalendar Buttons smaller */
+.fc-button {
+    background-color: #007bff !important;
+    border: none !important;
+    color: white !important;
+    cursor: pointer;
+    padding: 7px 12px !important;
+    font-size: 0.9em;
+    border-radius: 6px !important;
+}
+
+.fc-button:hover,
+.fc-button:focus {
+    background-color: #0056b3 !important;
+    outline: none;
+}
+
+.fc-button-active {
+    background-color: #004a99 !important;
+}
+
+/* Custom Calendar Header */
+.calendar-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Custom Buttons smaller */
+.calendar-nav button,
+.calendar-views button {
+    padding: 9px 17px;
+    margin: 0 6px 6px 6px;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.calendar-nav button:hover,
+.calendar-views button:hover,
+.calendar-nav button:focus,
+.calendar-views button:focus {
+    background-color: #e0e0e0;
+    outline: none;
+}
+
+.calendar-views button.active {
+    background: #007bff;
+    color: white;
+}
+
+/* Month title smaller */
+.calendar-title {
+    margin: 8px 0 12px;
+    font-size: 1.7em;
+    font-weight: bold;
+}
+
+/* Today highlight */
+.fc-day-today {
+    background: #eaf4ff !important;
+}
+
+/* Bigger day cells */
+.fc-daygrid-day-frame {
+    min-height: 120px;
+}
+
+/* Event styling */
+.fc-event-title {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+/* Modal */
+.modal {
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    width: 90%;
+    max-width: 380px;
+    border-radius: 12px;
+
+    /* modern pop efekts */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    animation: modalPop 0.3s ease;
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.95); }
+    to { transform: scale(1); }
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    font-size: 1em;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Responsive */
+@media(max-width:600px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #calendar {
+        font-size: 1em;
+        padding: 15px;
+    }
+}
+
+/* Footer */
+footer {
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+    font-size: 0.9em;
+    z-index: 999;
+}

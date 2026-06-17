@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Printable Schedule - MyGoTo Fitness</title>
+    <link href="../assets/css/export_pdf.css" rel="stylesheet">
+</head>
+<body>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <button class="print-btn" onclick="window.location.href='../index'">← Back to Schedule</button>
+            <button class="print-btn" onclick="window.print()" style="margin-left: 10px;">Print or Save as PDF</button>
+        </div>
+        <img src="../assets/images/logo.png" alt="Logo" style="height: 80px;">
+    </div>
+
+    <div class="header">
+        <h1>MyGoTo Fitness - Workouts Schedule</h1>
+        <?php if (!empty($filter_date_range)): ?>
+            <p><strong>Date Range:</strong> <?= $filter_date_range ?></p>
+        <?php endif; ?>
+        <p>Generated on: <?php echo date('d.m.Y H:i'); ?></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Workout</th>
+                <th>Description</th>
+                <th>Date & Time</th>
+                <th>Attendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><strong><?php echo htmlspecialchars($row['title']); ?></strong></td>
+                <td><?php echo htmlspecialchars($row['description']); ?></td>
+                <td><?php echo date('d.m.Y H:i', strtotime($row['start_datetime'])); ?></td>
+                <td><?php echo $row['booked'] . ' / ' . $row['capacity']; ?></td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© 2026 MyGoToGym - Internal Administration Report</p>
+    </div>
+
+</body>
+</html>

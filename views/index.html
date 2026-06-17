@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #0b0b0f; color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<title><?= $t['schedule'] ?></title>
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+<link href="assets/css/nav.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<link href="assets/css/theme.css" rel="stylesheet">
+<link href="assets/css/index.css" rel="stylesheet">
+
+<style>
+    .calendar-enhanced-layout {
+        margin-top: 60px; /* Increases the gap between the header and the calendar */
+    }
+
+    /* Make holidays non-clickable for everyone, including admins */
+    .fc-day-holiday {
+        pointer-events: none !important;
+    }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<?php include 'api/nav.php'; ?>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="top-header" style="max-width: 100%; margin: 60px 0 30px 0; padding: 0 160px;">
+    <div class="username-display">
+        <?php if($username): ?>
+            <span style="color: rgba(255,255,255,0.4)"><?= $t['welcome'] ?>, </span><br>
+            <strong style="color: #fff"><?= htmlspecialchars($username) ?></strong>
+        <?php endif; ?>
+    </div>
+
+    <h1 class="page-title"><?= $t['schedule'] ?></h1>
+    <div class="top-spacer"></div>
+</div>
+
+<script>
+window.USER_ROLE = "<?= $role ?>";
+window.USER_ID = "<?= $_SESSION['user_id'] ?? 0 ?>";
+window.I18N = {
+    locale: "<?= $current_lang ?>",
+    time: "<?= $t['time'] ?>",
+    attendance: "<?= $t['attendance'] ?>",
+    classFull: "<?= $t['class_full'] ?>",
+    loadingAthletes: "<?= $t['loading_athletes'] ?>",
+    noParticipants: "<?= $t['no_participants'] ?>",
+    totalJoined: "<?= $t['total_joined'] ?>",
+    cancelMyRes: "<?= $t['cancel_my_res'] ?>",
+    exportExcel: "<?= $t['export_excel'] ?>",
+    printPdf: "<?= $t['print_pdf'] ?>",
+    resCancelled: "<?= $t['res_cancelled'] ?>",
+    confirmCancel: "<?= $t['confirm_cancel'] ?>",
+    selectClass: "<?= $t['select_class'] ?>",
+    cancel: "<?= $t['cancel'] ?>",
+    close: "<?= $t['close'] ?>",
+    loginToView: "<?= $t['login_to_view'] ?>",
+    joinMsg: "<?= $t['join_msg'] ?>",
+    remaining: "<?= $t['remaining'] ?>",
+    reserve: "<?= $t['reserve'] ?>",
+    confirmDelete: "<?= $t['confirm_delete'] ?>",
+    saveFailed: "<?= $t['save_failed'] ?>",
+    sidebarHint: "<?= $t['sidebar_hint'] ?>",
+    trainerLabel: "<?= $t['trainer_label'] ?>",
+    adminName: "<?= $t['admin_name'] ?>"
+};
+</script>
+<div class="calendar-enhanced-layout" style="max-width: 1600px;">
+
+    <!-- LEFT AD BOX -->
+    <div class="left-ad-panel">
+        <p>Ad Space (Left)</p>
+        <!-- <img src="assets/images/ad-left.jpg" style="max-width:100%; border-radius:15px;"> -->
+    </div>
+
+    <div class="calendar-main-content-area">
+        <div id="calendar"></div>
+        
+        <!-- BOTTOM AD BOX -->
+        <div class="bottom-ad-panel">
+            <p>Ad Space (Bottom)</p>
+            <!-- <img src="assets/images/ad-bottom.jpg" style="max-width:100%; border-radius:15px;"> -->
+        </div>
+    </div>
+
+    <div class="class-info-panel">
+
+        <h2 id="calendarTitle"></h2>
+
+        <div class="calendar-nav">
+            <button id="prevBtn">&lt;</button>
+            <button id="todayBtn"><?= $t['today'] ?></button>
+            <button id="nextBtn">&gt;</button>
+        </div>
+
+        <div class="info-section">
+            <h3><?= $t['class_details'] ?></h3>
+            <div id="classInfo">
+                <p class="muted"><?= $t['select_class'] ?></p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3><?= $t['participants'] ?></h3>
+            <div id="participantList">
+                <p class="muted"><?= $t['join_msg'] ?></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div> <!-- End of .container -->
+
+<div id="workoutModal" class="modal">
+    <div class="modal-content">
+
+        <h3 id="modalTitle"><?= $t['create_workout'] ?></h3>
+
+        <input type="hidden" id="classId">
+
+        <input type="text" id="classTitle" placeholder="<?= $t['name_label'] ?>">
+
+        <textarea id="classDesc" placeholder="<?= $t['schedule'] ?>"></textarea>
+
+        <input type="datetime-local" id="classDate">
+
+        <input type="number" id="classCap" placeholder="Capacity">
+
+        <div style="margin-top: 15px; margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: rgba(255,255,255,0.6); font-size: 0.85rem;">Event Color</label>
+            <input type="hidden" id="classColor" value="Blue">
+            <div class="custom-dropdown" id="colorPicker">
+                <div class="dropdown-selected">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="color-dot" id="selectedDot" style="background: #7c5cff;"></span>
+                        <span id="selectedLabel">Blue</span>
+                    </div>
+                    <span style="font-size: 0.7rem; opacity: 0.5;">▼</span>
+                </div>
+                <div class="dropdown-options" id="colorOptions">
+                    <div class="dropdown-option" data-value="Blue"><span class="color-dot" style="background: #7c5cff;"></span> Blue</div>
+                    <div class="dropdown-option" data-value="Green"><span class="color-dot" style="background: #28a745;"></span> Green</div>
+                    <div class="dropdown-option" data-value="Red"><span class="color-dot" style="background: #dc3545;"></span> Red</div>
+                    <div class="dropdown-option" data-value="Orange"><span class="color-dot" style="background: #fd7e14;"></span> Orange</div>
+                    <div class="dropdown-option" data-value="Purple"><span class="color-dot" style="background: #6f42c1;"></span> Purple</div>
+                    <div class="dropdown-option" data-value="Teal"><span class="color-dot" style="background: #20c997;"></span> Teal</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button id="saveClassBtn"><?= $t['save'] ?></button>
+            <button id="deleteClassBtn"><?= $t['delete'] ?></button>
+            <button id="closeModal"><?= $t['close'] ?></button>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
+<script src="assets/js/calendar.js?v=<?= time() ?>"></script>
+<script>
+/**
+ * Function called from calendar.js whenever an event is clicked.
+ * Handles updating the right-side dashboard with specific event data.
+ */
+window.updateSidebar = function(event) {
+    const infoBox = document.getElementById("classInfo");
+    const listContainer = document.getElementById("participantList");
+
+    const title = event.title;
+    const description = event.extendedProps.description || "";
+    const booked = event.extendedProps.booked || 0;
+    const capacity = event.extendedProps.capacity || 0;
+    const isFull = booked >= capacity;
+    const isPast = event.start < new Date();
+    const dotColor = isPast ? '#555555' : (event.backgroundColor || '#7c5cff');
+    const time = event.start ? event.start.toLocaleTimeString(window.I18N.locale, { hour: '2-digit', minute: '2-digit', hour12: false }) : "";
+
+    // Get trainer info - checking multiple common field names for compatibility
+    const trainerNameFromDb = event.extendedProps.trainer_name || event.extendedProps.creator_name || event.extendedProps.username || "";
+    const creatorRoleFromDb = event.extendedProps.creator_role || event.extendedProps.role || "user";
+    
+    // If created by admin, use the official administration label; otherwise use the trainer's name
+    const displayedTrainer = (creatorRoleFromDb.toLowerCase() === "admin") ? window.I18N.adminName : trainerNameFromDb;
+
+    const descriptionHtml = description ? `<p style="margin-top: 15px; color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.4; border-left: 2px solid #7c5cff; padding-left: 10px; font-style: italic;">${description.replace(/\n/g, '<br>')}</p>` : '';
+    const isAdminOrTrainer = window.USER_ROLE === "admin" || window.USER_ROLE === "trainer";
+    const hintHtml = window.USER_ID != "0" ? `<p class="muted">${window.I18N.sidebarHint}</p>` : '';
+
+    // Update UI with event details
+    infoBox.innerHTML = `
+        ${isFull ? `<span class="badge-full">${window.I18N.classFull}</span>` : ''}
+        <div class="info-title" style="display: flex; align-items: center; gap: 12px;">
+            <span class="color-dot" style="background: ${dotColor}; width: 14px; height: 14px; flex-shrink: 0;"></span>
+            <span>${title}</span>
+        </div>
+        <p><b>${window.I18N.time}:</b> ${time}</p>
+        <p><b>${window.I18N.attendance}:</b> ${booked} / ${capacity}</p>
+        <p><b>${window.I18N.trainerLabel}:</b> <span style="color: #7c5cff; font-weight: 600;">${displayedTrainer || "<i>N/A</i>"}</span></p>
+        <div id="cancelContainer"></div>
+        <div id="exportContainer" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
+        
+        ${isAdminOrTrainer 
+            ? (descriptionHtml + hintHtml)
+            : (descriptionHtml || hintHtml)
+        }
+    `;
+
+    if (event.id && window.USER_ID != "0") {
+        listContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0;">
+                <div class="spinner"></div>
+                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-top: 12px;">${window.I18N.loadingAthletes}</p>
+            </div>
+        `;
+
+        fetch(`api/get_participants.php?class_id=${event.id}`)
+            .then(res => res.json())
+            .then(users => {
+                if (users.length === 0) {
+                    listContainer.innerHTML = `<p class="muted">${window.I18N.noParticipants}</p>`;
+                } else {
+                    listContainer.innerHTML = `
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem; display: flex; flex-direction: column; gap: 8px;">
+                            ${users.map(u => `
+                                <li style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px;">
+                                    <span style="color: #7c5cff;">👤</span> ${u.name}
+                                </li>
+                            `).join('')}
+                        </ul>
+                        <p class="muted" style="font-size: 0.75rem; margin-top: 10px;">${window.I18N.totalJoined}: ${users.length}</p>
+                    `;
+
+                    // Show cancel button if the current user is a participant and event is not past
+                    if (!isPast && users.some(u => u.id == window.USER_ID)) {
+                        document.getElementById("cancelContainer").innerHTML = `
+                            <button class="btn-cancel" onclick="cancelReservation(${event.id})">${window.I18N.cancelMyRes}</button>
+                        `;
+                    }
+
+                    // Show export options for admin and trainer
+                    if (window.USER_ROLE === "admin" || window.USER_ROLE === "trainer") {
+                        document.getElementById("exportContainer").innerHTML = `
+                            <button onclick="window.location.href='export/export_class_participants?class_id=${event.id}'" 
+                                    style="background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600;">
+                                ${window.I18N.exportExcel}
+                            </button>
+                            <button onclick="window.location.href='export/export_class_participants_pdf?class_id=${event.id}'" 
+                                    style="background: #c62828; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600;">
+                                ${window.I18N.printPdf}
+                            </button>
+                        `;
+                    }
+                }
+            })
+            .catch(() => {
+                listContainer.innerHTML = `<p class="error">Error loading users.</p>`;
+            });
+    } else if (event.id) {
+        listContainer.innerHTML = `<p class="muted">${window.I18N.loginToView}</p>`;
+    }
+};
+
+window.cancelReservation = function(classId) {
+    if(!confirm(window.I18N.confirmCancel)) return;
+    
+    fetch('api/cancel_reservation', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ class_id: classId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.message);
+        if(data.success) {
+            window.calendar.refetchEvents();
+            // Clear the sidebar details to reflect the change
+            document.getElementById("classInfo").innerHTML = `<p class="muted">${window.I18N.resCancelled}</p>`;
+            document.getElementById("participantList").innerHTML = `<p class="muted">${window.I18N.joinMsg}</p>`;
+        }
+    });
+};
+</script>
+
+<?php include 'api/footer.php'; ?>
+
+</div>
+
+</body>
+</html>

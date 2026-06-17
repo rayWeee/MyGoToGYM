@@ -1,0 +1,18 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+
+# Redirect browser requests for .php files to clean URLs.
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# Let real files and directories, such as assets, load normally.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ router.php [L]
+
+# Deny access to sensitive files
+<FilesMatch "\.(sql|env|log|bak|ini|db|csrf|router)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,63 @@
+.verify-wrapper {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex: 1;
+    padding: 20px;
+}
+
+.verify-card {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(15px);
+    padding: 60px 40px;
+    border-radius: 24px;
+    text-align:center;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    animation: border-glow 8s infinite ease-in-out;
+}
+
+.verify-card .icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.verify-card h2 {
+    margin-bottom: 15px;
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #fff, #aaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.verify-card p {
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    margin-bottom: 35px;
+    font-size: 1.1rem;
+}
+
+.btn-verify {
+    display: inline-block;
+    padding: 14px 35px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.btn-verify:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(124, 92, 255, 0.3);
+}
+
+@keyframes border-glow {
+    0%, 100% { border-color: rgba(124, 92, 255, 0.4); }
+    50% { border-color: rgba(0, 212, 255, 0.4); }
+}

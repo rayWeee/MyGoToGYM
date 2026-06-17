@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #0b0b0f; color-scheme: dark;">
+<head>
+    <meta charset="UTF-8">
+    <title>403 - Access Forbidden</title>
+    <meta name="color-scheme" content="dark">
+    <link rel="icon" type="image/png" href="<?= $basePath ?>/assets/images/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="<?= $basePath ?>/assets/css/theme.css" rel="stylesheet">
+    <link href="<?= $basePath ?>/assets/css/nav.css" rel="stylesheet">
+    <link href="<?= $basePath ?>/assets/css/404.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <?php include 'api/nav.php'; ?>
+
+    <div class="container">
+
+    <?php if($username): ?>
+    <div class="top-header" style="max-width: 100%; margin: 60px 0 30px 0; padding: 0 120px;">
+        <div class="username-display">
+            <span style="color: rgba(255,255,255,0.4)"><?= $t['welcome'] ?>, </span><br>
+            <strong style="color: #fff"><?= htmlspecialchars($username) ?></strong>
+        </div>
+        <h1 class="page-title">403 - Forbidden</h1>
+        <div class="top-spacer"></div>
+    </div>
+    <?php endif; ?>
+
+    <div class="error-wrapper">
+        <div class="error-card">
+            <h1 class="error-code">403</h1>
+            <p class="error-msg">Access Denied. You do not have permission to view this page.</p>
+            <a href="<?= $basePath ?>/homepage" class="btn-home">Return to Homepage</a>
+        </div>
+    </div>
+
+    </div> <!-- End of .container -->
+
+    <?php include 'api/footer.php'; ?>
+
+</div>
+
+</body>
+</html>

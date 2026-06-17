@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Participants List - <?php echo htmlspecialchars($class['title']); ?></title>
+    <link href="../assets/css/export_class_participants.css" rel="stylesheet">
+</head>
+<body>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <button class="print-btn" onclick="window.location.href='../index'">← Back to Schedule</button>
+            <button class="print-btn" onclick="window.print()" style="margin-left: 10px;">Print / Save as PDF</button>
+        </div>
+        <img src="../assets/images/logo.png" alt="Logo" style="height: 80px;">
+    </div>
+
+    <div class="header">
+        <h1>Participant List: <?php echo htmlspecialchars($class['title']); ?></h1>
+        <p><strong>Date:</strong> <?php echo date('d.m.Y H:i', strtotime($class['start_datetime'])); ?></p>
+        <p><strong>Total Participants:</strong> <?php echo $result->num_rows; ?></p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th width="50">#</th>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Phone Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if($result->num_rows === 0): ?>
+                <tr><td colspan="3" style="text-align:center;">No participants joined yet.</td></tr>
+            <?php else: ?>
+                <?php $i = 1; while($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $i++; ?></td>
+                    <td><?php echo htmlspecialchars($row['name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['email']); ?></td>
+                    <td><?php echo htmlspecialchars($row['phone'] ?? 'N/A'); ?></td>
+                </tr>
+                <?php endwhile; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</body>
+</html>

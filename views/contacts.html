@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #0b0b0f; color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<title><?= $t['contacts'] ?></title>
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="assets/css/theme.css" rel="stylesheet">
+<link href="assets/css/nav.css" rel="stylesheet">
+<link href="assets/css/contacts.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<?php include 'api/nav.php'; ?>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="top-header" style="max-width: 100%; margin: 60px 0 30px 0; padding: 0 120px;">
+    <div class="username-display">
+        <?php if($username): ?>
+            <span style="color: rgba(255,255,255,0.4)"><?= $t['welcome'] ?>, </span><br>
+            <strong style="color: #fff"><?= htmlspecialchars($username) ?></strong>
+        <?php endif; ?>
+    </div>
+    <h1 class="page-title"><?= $t['contacts'] ?></h1>
+    <div class="top-spacer"></div>
+</div>
+
+<main class="contact-wrapper">
+
+<section class="contact-card">
+
+<div style="text-align: center; margin-bottom: 30px;">
+    <img src="assets/images/logo.png" alt="Logo" style="height: 90px; width: auto;">
+</div>
+
+<div class="contact-grid">
+
+<div class="contact-item">
+<span><?= $t['name'] ?></span>
+<strong><?= htmlspecialchars($name) ?></strong>
+</div>
+
+<div class="contact-item">
+<span><?= $t['email'] ?></span>
+<strong><a href="mailto:<?= $email ?>"><?= htmlspecialchars($email) ?></a></strong>
+</div>
+
+<div class="contact-item">
+<span><?= $t['phone'] ?></span>
+<strong><a href="tel:<?= $phone ?>"><?= htmlspecialchars($phone) ?></a></strong>
+</div>
+
+<div class="contact-item">
+<span><?= $t['address'] ?></span>
+<strong><a href="<?= $mapUrl ?>" target="_blank"><?= htmlspecialchars($address) ?></a></strong>
+</div>
+
+</div>
+
+<div class="map-container">
+<iframe src="<?= $mapUrl ?>&output=embed" style="background: #1c1c1e; border: none;"></iframe>
+</div>
+
+</section>
+
+</main>
+
+</div> <!-- End of .container -->
+
+<?php include 'api/footer.php'; ?>
+
+</div>
+
+</body>
+</html>

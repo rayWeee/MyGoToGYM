@@ -1,0 +1,10 @@
+.error-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; margin-top: 30px; /* Adjusted to work with page-wrapper */ }
+.error-card {
+    text-align: center; max-width: 500px; padding: 50px;
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px; backdrop-filter: blur(20px); box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+.error-code { font-size: 8rem; font-weight: 900; margin: 0; background: linear-gradient(135deg, #7c5cff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+.error-msg { font-size: 1.5rem; margin: 20px 0; color: rgba(255,255,255,0.8); }
+.btn-home { display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #7c5cff, #00d4ff); color: white; text-decoration: none; border-radius: 12px; font-weight: 700; transition: 0.3s; margin-top: 20px; }
+.btn-home:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(124,92,255,0.3); }

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #0b0b0f; color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<title><?= $t['profile'] ?></title>
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="assets/css/theme.css" rel="stylesheet">
+<link href="assets/css/nav.css" rel="stylesheet">
+<link href="assets/css/profile.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<?php include 'api/nav.php'; ?>
+
+<div class="container">
+
+<div class="top-header" style="max-width: 100%; margin: 60px 0 30px 0; padding: 0 120px;">
+    <div class="username-display">
+        <?php if($username): ?>
+            <span style="color: rgba(255,255,255,0.4)"><?= $t['welcome'] ?>, </span><br>
+            <strong style="color: #fff"><?= htmlspecialchars($username) ?></strong>
+        <?php endif; ?>
+    </div>
+    <h1 class="page-title"><?= $t['profile'] ?></h1>
+    <div class="top-spacer"></div>
+</div>
+
+<div class="profile-wrapper">
+    <div class="profile-card">
+        <h3><?= $t['acc_details'] ?> (<?= ucfirst($user['role'] ?? '') ?>)</h3>
+        
+        <div class="form-group" style="background: rgba(124,92,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(124,92,255,0.3);">
+            <label style="color: #7c5cff; font-weight: 700;"><?= $t['membership_status'] ?></label>
+            <?php if (!empty($user['membership_type']) && strtotime($user['membership_expiry']) > time()): ?>
+                <div style="font-size: 1.1rem; font-weight: 600;">
+                    <?= ucfirst($user['membership_type']) ?> Plan
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.7;">
+                    <?= $t['expires_on'] ?> <?= date('M d, Y', strtotime($user['membership_expiry'])) ?>
+                </div>
+            <?php else: ?>
+                <div style="font-size: 1rem; color: #ff5c5c;"><?= $t['no_active_membership'] ?></div>
+                <a href="homepage.php#pricing" style="color: #00d4ff; font-size: 0.85rem; text-decoration: none;"><?= $t['view_plans'] ?> →</a>
+            <?php endif; ?>
+        </div>
+
+        <div id="profileMsg" class="status-msg"></div>
+        
+        <form id="profileForm">
+            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+            <div class="form-group">
+                <label><?= $t['name_label'] ?></label>
+                <input type="text" value="<?= htmlspecialchars($user['name'] ?? '') ?>" disabled>
+            </div>
+            <div class="form-group">
+                <label><?= $t['email_label'] ?></label>
+                <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" required>
+            </div>
+            <div class="form-group">
+                <label><?= $t['phone_label'] ?></label>
+                <input type="text" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="e.g. +371 20000000">
+            </div>
+            <button type="submit"><?= $t['update_info'] ?></button>
+        </form>
+
+        <hr>
+        <h3><?= $t['change_pass'] ?></h3>
+        <form id="passwordForm">
+            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+            <div class="form-group">
+                <label><?= $t['current_pass'] ?></label>
+                <div class="password-wrapper">
+                    <input type="password" name="current_password" id="current_password" required>
+                    <span class="toggle-password" onclick="togglePass('current_password')">👁</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><?= $t['new_pass'] ?></label>
+                <div class="password-wrapper">
+                    <input type="password" name="new_password" id="new_password" required>
+                    <span class="toggle-password" onclick="togglePass('new_password')">👁</span>
+                </div>
+                <div class="password-hint">
+                    <?= $t['pass_hint'] ?>
+                </div>
+                <div id="password-strength">
+                    <div id="strength-bar"></div>
+                </div>
+            </div>
+            <button type="submit" style="background: #333;"><?= $t['update_pass'] ?></button>
+        </form>
+
+        <hr style="margin: 40px 0;">
+        <h3><?= $t['payment_history'] ?></h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 12px;"><?= $t['date'] ?></th>
+                        <th style="padding: 12px;"><?= $t['basic'] ?>/<?= $t['pro'] ?></th>
+                        <th style="padding: 12px;"><?= $t['amount'] ?></th>
+                        <th style="padding: 12px;"><?= $t['status'] ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if($payments->num_rows > 0): while($p = $payments->fetch_assoc()): ?>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 12px;"><?= date('d.m.Y', strtotime($p['created_at'])) ?></td>
+                            <td style="padding: 12px;"><?= ucfirst($p['plan_type']) ?></td>
+                            <td style="padding: 12px;">€<?= number_format($p['amount'] / 100, 2) ?></td>
+                            <td style="padding: 12px;"><span style="color: <?= $p['status'] === 'succeeded' ? '#4caf50' : '#ff5c5c' ?>;"><?= ucfirst($p['status']) ?></span></td>
+                        </tr>
+                    <?php endwhile; else: ?>
+                        <tr><td colspan="4" style="padding: 20px; text-align: center; opacity: 0.5;"><?= $t['no_payments'] ?></td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+
+// Toggle password visibility
+function togglePass(id){
+    const el = document.getElementById(id);
+    el.type = el.type === "password" ? "text" : "password";
+}
+
+// Password strength meter
+const newPasswordInput = document.getElementById('new_password');
+const strengthBar = document.getElementById('strength-bar');
+
+newPasswordInput.addEventListener('input', () => {
+    let v = newPasswordInput.value;
+    let s = 0; // strength score
+
+    if (v.length >= 6) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/\d/.test(v)) s++;
+    if (/[\W_]/.test(v)) s++; // \W matches non-alphanumeric, _ is included in that
+
+    strengthBar.style.width = (s * 25) + "%";
+    strengthBar.style.backgroundColor =
+        s <= 1 ? "red" :
+        s == 2 ? "orange" :
+        s == 3 ? "yellow" : "#00d4ff";
+});
+
+const handleForm = (formId, endpoint) => {
+    document.getElementById(formId).onsubmit = function(e) {
+        e.preventDefault();
+        const msgDiv = document.getElementById('profileMsg');
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            msgDiv.innerText = res.message;
+            msgDiv.className = 'status-msg ' + (res.success ? 'success' : 'error');
+            if(res.success && formId === 'passwordForm') {
+                this.reset();
+                strengthBar.style.width = "0%"; // Reset strength bar
+            }
+        })
+        .catch(() => {
+            msgDiv.innerText = "Connection error.";
+            msgDiv.className = 'status-msg error';
+        });
+    };
+};
+
+handleForm('profileForm', 'api/update_profile.php?action=info');
+handleForm('passwordForm', 'api/update_profile.php?action=password');
+</script>
+
+<?php include 'api/footer.php'; ?>
+
+</div>
+
+</body>
+</html>

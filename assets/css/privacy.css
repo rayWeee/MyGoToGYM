@@ -1,0 +1,10 @@
+.privacy-wrapper { display: flex; justify-content: center; padding: 60px 20px; padding-top: 120px; }
+.privacy-card {
+    max-width: 900px; width: 100%; padding: 35px;
+    background: rgba(11, 11, 15, 0.45); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px; backdrop-filter: blur(30px); box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+}
+.privacy-card h1 { text-align: center; font-size: 2.6rem; font-weight: 800; margin-bottom: 30px; }
+.privacy-card h2 { font-size: 1.5rem; margin-top: 30px; margin-bottom: 15px; color: #7c5cff; }
+.privacy-card p { margin-bottom: 15px; line-height: 1.7; color: rgba(255, 255, 255, 0.8); }
+@media (max-width: 768px) { .privacy-card { padding: 20px; } .privacy-card h1 { font-size: 2rem; } }

@@ -1,0 +1,7 @@
+        body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 40px; }
+        .header { border-bottom: 2px solid #333; margin-bottom: 30px; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .print-btn { background: #333; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+        @media print { .print-btn { display: none; } }
