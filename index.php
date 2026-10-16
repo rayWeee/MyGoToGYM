@@ -7,8 +7,12 @@
  */
 
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-$scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-$basePath = rtrim(str_replace('/index.php', '', $scriptName), '/');
+$basePath = '';
+$appRoot = str_replace('\\', '/', realpath(__DIR__) ?: __DIR__);
+$documentRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: '');
+if ($documentRoot !== '' && strpos($appRoot, $documentRoot) === 0) {
+    $basePath = rtrim(substr($appRoot, strlen($documentRoot)), '/');
+}
 
 if (PHP_SAPI === 'cli-server') {
     $staticFile = __DIR__ . rawurldecode($requestPath);
@@ -22,6 +26,11 @@ if ($basePath !== '' && strpos($requestPath, $basePath) === 0) {
 }
 
 $route = trim(rawurldecode($requestPath), '/');
+
+if (preg_match('#^(en|lv|ru)(?:/(.*))?$#', $route, $matches)) {
+    $_GET['lang'] = $matches[1];
+    $route = trim($matches[2] ?? '', '/');
+}
 
 if ($route === '' || strtolower($route) === 'index.php') {
     require __DIR__ . '/homepage.php';
@@ -57,7 +66,8 @@ if ($route !== 'index') {
         foreach ($adminOnlyPrefixes as $prefix) {
             if (strpos($route, $prefix) === 0) {
                 if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
+                    require_once __DIR__ . '/api/session.php';
+                    start_app_session();
                 }
 
                 if (($_SESSION['role'] ?? '') !== 'admin') {
@@ -80,6 +90,7 @@ if ($route !== 'index') {
 }
 
 include 'api/db.php';
+require_once __DIR__ . '/api/csrf.php';
 
 // $username and $role are provided by api/nav.php.
 include 'views/index.html';

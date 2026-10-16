@@ -1,8 +1,7 @@
 <?php
 // CSRF helper functions
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/api/session.php';
+start_app_session();
 
 function generate_csrf() {
     if (empty($_SESSION['csrf_token'])) {

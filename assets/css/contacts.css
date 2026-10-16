@@ -21,6 +21,54 @@
 .contact-item span{ color:rgba(255,255,255,0.6); font-size:0.85rem; }
 .contact-item strong{ display:block; margin-top:6px; font-size:1.05rem; }
 .contact-item a{ color:#7c5cff; text-decoration:none; }
-.map-container iframe{ width:100%; height:320px; border:none; border-radius:20px; margin-top:25px; }
+.map-container { margin-top: 25px; }
+.map-header {
+    margin-bottom: 14px;
+    padding: 0 6px;
+}
+.map-header strong {
+    display: block;
+    font-size: 1.08rem;
+    margin-top: 6px;
+}
+.map-canvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    background: rgba(17, 17, 22, 0.8);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+.map-link {
+    display: block;
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(124,92,255,0.12), rgba(0,212,255,0.08));
+    border: 1px solid rgba(255,255,255,0.08);
+    color: white;
+    text-decoration: none;
+    transition: 0.25s ease;
+}
+.map-link:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.15); }
+.map-label {
+    display: block;
+    color: rgba(255,255,255,0.65);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+.map-link strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+.map-action {
+    color: #7c5cff;
+    font-weight: 600;
+}
 
 @media(max-width:768px){ .username-display{ text-align:left; margin-bottom:10px; } }

@@ -7,4 +7,18 @@
 .privacy-card h1 { text-align: center; font-size: 2.6rem; font-weight: 800; margin-bottom: 30px; }
 .privacy-card h2 { font-size: 1.5rem; margin-top: 30px; margin-bottom: 15px; color: #7c5cff; }
 .privacy-card p { margin-bottom: 15px; line-height: 1.7; color: rgba(255, 255, 255, 0.8); }
+.privacy-card .impressum-brand { margin-top: 30px; margin-bottom: 15px; }
+.impressum-location {
+    display: block;
+    width: 280px;
+    max-width: 38%;
+    height: auto;
+    margin: 0 auto 30px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+}
 @media (max-width: 768px) { .privacy-card { padding: 20px; } .privacy-card h1 { font-size: 2rem; } }
+@media (max-width: 600px) {
+    .impressum-location { width: 100%; max-width: 360px; }
+}

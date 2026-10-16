@@ -1,13 +1,20 @@
 <?php
 require_once __DIR__ . '/../api/db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/export_helpers.php';
+
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
+use OpenSpout\Writer\XLSX\Options;
 
 // Security check: Admin only
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    die("Access denied.");
-}
+export_require_admin($basePath);
 
-if (!isset($_GET['class_id'])) {
-    die("Class ID missing.");
+if (!isset($_GET['class_id']) || !ctype_digit((string) $_GET['class_id'])) {
+    http_response_code(422);
+    exit('Class ID is required.');
 }
 
 $class_id = intval($_GET['class_id']);
@@ -18,7 +25,7 @@ $stmt->bind_param("i", $class_id);
 $stmt->execute();
 $class = $stmt->get_result()->fetch_assoc();
 $title = $class['title'] ?? 'workout';
-$filename = str_replace(' ', '_', $title) . "_participants_" . date('Y-m-d') . ".csv";
+$filename = preg_replace('/[^a-z0-9_-]+/i', '_', $title) . "_participants_" . date('Y-m-d') . ".xlsx";
 
 // Fetch participants
 $stmt = $conn->prepare("
@@ -31,14 +38,31 @@ $stmt->bind_param("i", $class_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=' . $filename);
+$options = new Options();
+$options->DEFAULT_ROW_STYLE->setFontSize(9);
+$options->DEFAULT_ROW_HEIGHT = 14;
+$options->setColumnWidth(7, 1);
+$options->setColumnWidth(24, 2);
+$options->setColumnWidth(32, 3);
+$options->setColumnWidth(18, 4);
+$writer = new Writer($options);
+$writer->openToBrowser($filename);
+$titleStyle = (new Style())->setFontBold()->setFontSize(14)->setFontColor(Color::WHITE)->setBackgroundColor(Color::DARK_BLUE);
+$metaStyle = (new Style())->setFontSize(10);
+$headerStyle = (new Style())->setFontBold()->setFontSize(9)->setFontColor(Color::WHITE)->setBackgroundColor(Color::BLUE);
+$writer->addRow(Row::fromValues(['MyGoToGym Participant List', $title], $titleStyle));
+$writer->addRow(Row::fromValues(['Generated', date('Y-m-d H:i')], $metaStyle));
+$writer->addRow(Row::fromValues([]));
+$writer->addRow(Row::fromValues([]));
+$writer->addRow(Row::fromValues(['No.', 'Name', 'Email address', 'Phone number'], $headerStyle));
 
-$output = fopen('php://output', 'w');
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
-fputcsv($output, ['Name', 'Email Address', 'Phone Number']);
-
+$number = 1;
 while ($row = $result->fetch_assoc()) {
-    fputcsv($output, [$row['name'], $row['email'], $row['phone']]);
+    $writer->addRow(Row::fromValues([
+        $number++,
+        export_safe_cell($row['name']),
+        export_safe_cell($row['email']),
+        export_safe_cell($row['phone'] ?: 'Not provided'),
+    ]));
 }
-fclose($output);
+$writer->close();

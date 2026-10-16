@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 const calendarEl = document.getElementById('calendar');
 const modal = document.getElementById('workoutModal');
 
@@ -135,7 +139,7 @@ dayCellClassNames: function(arg) {
 
 eventSources: [
     {
-        url: 'api/get_classes.php'
+        url: 'api/get_classes'
     },
     {
         events: function(fetchInfo, successCallback) {
@@ -288,8 +292,8 @@ eventClick(info){
     const userContainer = document.getElementById('modalUserContent');
 
     userContainer.innerHTML = `
-        <h3>${title}</h3>
-        <p>${desc}</p>
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(desc)}</p>
         <p><b>${window.I18N.attendance}:</b> ${booked}/${cap}</p>
         <p><b>${window.I18N.remaining}:</b> ${remaining}</p>
         <div class="modal-actions">
@@ -307,12 +311,12 @@ eventClick(info){
 
     document.getElementById('reserveBtn').onclick = () => {
 
-        fetch('api/reserve_class.php', {
+        fetch('api/reserve_class', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
                 class_id: id,
-                user_id: userId
+                csrf_token: window.CSRF_TOKEN
             })
         })
         .then(r => r.json())
@@ -359,7 +363,7 @@ document.getElementById('todayBtn').onclick = () => calendar.today();
 // ================= SAVE (ADMIN) =================
 saveBtn.onclick = () => {
 
-fetch('api/save_class.php', {
+fetch('api/save_class', {
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body: JSON.stringify({
@@ -369,6 +373,8 @@ description: descInput.value,
 start_datetime: dateInput.value,
 capacity: capInput.value,
 color: colorInput.value
+,
+csrf_token: window.CSRF_TOKEN
 })
 })
 .then(r => r.json())
@@ -390,10 +396,10 @@ deleteBtn.onclick = () => {
 
 if(!confirm(window.I18N.confirmDelete)) return;
 
-fetch('api/delete_class.php', {
+fetch('api/delete_class', {
 method:'POST',
 headers:{'Content-Type':'application/json'},
-body: JSON.stringify({id: classIdInput.value})
+body: JSON.stringify({id: classIdInput.value, csrf_token: window.CSRF_TOKEN})
 })
 .then(r => r.json())
 .then(data => {

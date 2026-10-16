@@ -1,0 +1,8 @@
+.env
+.env.local
+/vendor/
+/.DS_Store
+/logs/
+*.log
+php_errors.log
+/storage/sessions/

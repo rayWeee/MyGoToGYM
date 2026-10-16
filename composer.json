@@ -1,6 +1,15 @@
 {
     "require": {
+        "php": "^8.0",
         "phpmailer/phpmailer": "^7.0",
-        "stripe/stripe-php": "^16.0"
+        "stripe/stripe-php": "^16.0",
+        "openspout/openspout": "^4.0",
+        "dompdf/dompdf": "^3.1",
+        "giggsey/libphonenumber-for-php": "^8.13"
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.0"
+        }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require 'db.php';
+require_once 'csrf.php';
 
 // Session is started in db.php
 if (!isset($_SESSION['user_id'])) {
@@ -9,7 +10,16 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
-$class_id = intval($data['class_id']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_array($data) || !check_csrf($data['csrf_token'] ?? '')) {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => "Invalid security token"]);
+    exit;
+}
+$class_id = filter_var($data['class_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+if (!$class_id) {
+    echo json_encode(["success" => false, "message" => "Invalid class"]);
+    exit;
+}
 $user_id = $_SESSION['user_id'];
 
 // CHECK IF EVENT IS IN THE PAST

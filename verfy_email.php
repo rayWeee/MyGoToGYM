@@ -3,36 +3,64 @@ include 'api/db.php';
 
 $message = "";
 $success = false;
+$emailChangeConfirmed = false;
 
 if (!isset($_GET['token']) || empty($_GET['token'])) {
     $message = $t['invalid_link_message_generic'];
 } else {
     $token = $_GET['token'];
 
-    // Find user with this token
-    $stmt = $conn->prepare("SELECT id, email_verified FROM users WHERE verification_token = ? AND email_verified = 0"); // Only look for unverified accounts
+    $stmt = $conn->prepare("SELECT id, email, email_verified, pending_email, verification_token, (verification_expires IS NOT NULL AND verification_expires < NOW()) AS token_expired FROM users WHERE verification_token = ?");
     $stmt->bind_param("s", $token);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $user = $stmt->get_result()->fetch_assoc();
 
-    if ($user = $result->fetch_assoc()) {
-        // User found and is unverified
-        if ($user['email_verified'] == 1) {
-            $message = $t['verified_message']; // Use translated message
-            $success = true;
-        } else {
-            // Mark email as verified & remove token
-            $stmt2 = $conn->prepare("UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?");
-            $stmt2->bind_param("i", $user['id']);
+    if ($user) {
+        if ((int) $user['token_expired'] === 1) {
+            $stmt = $conn->prepare("UPDATE users SET pending_email = NULL, verification_token = NULL, verification_expires = NULL WHERE id = ? AND verification_token = ?");
+            $stmt->bind_param("is", $user['id'], $token);
+            $stmt->execute();
+            $message = $t['invalid_or_expired_token'];
+        } elseif (!empty($user['email_verified']) && !empty($user['pending_email'])) {
+            $newEmail = strtolower(trim($user['pending_email']));
+            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+            $stmt->bind_param("si", $newEmail, $user['id']);
+            $stmt->execute();
 
-            if ($stmt2->execute()) {
-                $message = $t['verified_message']; // Use translated message
+            if ($stmt->get_result()->num_rows > 0) {
+                $stmt = $conn->prepare("UPDATE users SET pending_email = NULL, verification_token = NULL, verification_expires = NULL WHERE id = ? AND verification_token = ?");
+                $stmt->bind_param("is", $user['id'], $token);
+                $stmt->execute();
+                $message = $t['email_change_taken'];
+            } else {
+                try {
+                    $stmt = $conn->prepare("UPDATE users SET email = ?, pending_email = NULL, verification_token = NULL, verification_expires = NULL WHERE id = ? AND verification_token = ? AND pending_email = ?");
+                    $stmt->bind_param("siss", $newEmail, $user['id'], $token, $user['pending_email']);
+
+                    if ($stmt->execute() && $stmt->affected_rows === 1) {
+                        $message = $t['email_change_verified'];
+                        $success = true;
+                        $emailChangeConfirmed = true;
+                    } else {
+                        $message = $t['invalid_or_expired_token'];
+                    }
+                } catch (mysqli_sql_exception $e) {
+                    $message = $t['email_change_taken'];
+                }
+            }
+        } elseif (empty($user['email_verified'])) {
+            $stmt = $conn->prepare("UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ? AND verification_token = ?");
+            $stmt->bind_param("is", $user['id'], $token);
+
+            if ($stmt->execute() && $stmt->affected_rows === 1) {
+                $message = $t['verified_message'];
                 $success = true;
             } else {
-                $message = $t['verification_failed']; // Assuming you'll add this to lang.php
+                $message = $t['invalid_or_expired_token'];
             }
+        } else {
+            $message = $t['invalid_or_expired_token'];
         }
-
     } else {
         $message = $t['invalid_or_expired_token'];
     }
@@ -60,7 +88,7 @@ if (!isset($_GET['token']) || empty($_GET['token'])) {
                     <span class="icon">✔️</span>
                     <h2><?= $t['verified_status'] ?></h2>
                     <p><?= htmlspecialchars($message) ?></p>
-                    <a href="<?= $basePath ?>/login" class="btn-verify"><?= $t['go_to_login'] ?></a>
+                    <a href="<?= $basePath ?>/<?= $emailChangeConfirmed ? 'profile' : 'login' ?>" class="btn-verify"><?= $emailChangeConfirmed ? $t['return_to_profile'] : $t['go_to_login'] ?></a>
                 <?php else: ?>
                     <span class="icon">❌</span>
                     <h2><?= $t['invalid_link_status'] ?></h2>
@@ -90,7 +118,20 @@ if (!isset($_GET['token']) || empty($_GET['token'])) {
                         .then(data => {
                             alert(data.message);
                             if (data.success) {
-                                document.getElementById('resendSection').innerHTML = `<p style="color: #4cff88; font-size: 1rem; margin: 10px 0;">${data.message}</p>`;
+                                const section = document.getElementById('resendSection');
+                                section.textContent = '';
+                                const message = document.createElement('p');
+                                message.style.cssText = 'color: #4cff88; font-size: 1rem; margin: 10px 0;';
+                                message.textContent = data.message;
+                                section.appendChild(message);
+
+                                if (data.verification_link) {
+                                    const link = document.createElement('a');
+                                    link.href = data.verification_link;
+                                    link.className = 'btn-verify';
+                                    link.textContent = 'Verify this account locally';
+                                    section.appendChild(link);
+                                }
                             }
                         })
                         .catch(err => {

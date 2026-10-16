@@ -235,6 +235,16 @@ font-size: 0.95rem;
 .calendar-nav { /* Center the buttons within the nav container */
     justify-content: center;
 }
+.calendar-nav #prevBtn,
+.calendar-nav #nextBtn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    gap: 0;
+    font-size: 1.2rem;
+}
 .calendar-nav button:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.3);
@@ -319,7 +329,16 @@ footer {
     background: #111;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 10px; margin-top: 5px; z-index: 100;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-height: 190px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.04);
 }
+.dropdown-options::-webkit-scrollbar { width: 7px; }
+.dropdown-options::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 10px; }
+.dropdown-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+.dropdown-options::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
 .dropdown-option { padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
 .dropdown-option:hover { background: rgba(255,255,255,0.05); }

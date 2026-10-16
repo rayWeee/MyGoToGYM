@@ -1,5 +1,13 @@
 <?php
 require_once __DIR__ . '/../api/db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/export_helpers.php';
+
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
+use OpenSpout\Writer\XLSX\Options;
 
 if (basename($_SERVER['PHP_SELF'] ?? '') === 'export_excel.php') {
     $query = $_SERVER['QUERY_STRING'] ?? '';
@@ -7,17 +15,7 @@ if (basename($_SERVER['PHP_SELF'] ?? '') === 'export_excel.php') {
     exit;
 }
 
-// Security check: Admin only
-if (!isset($_SESSION['user_id'])) {
-    header("Location: " . $basePath . "/login");
-    exit;
-}
-
-if (($_SESSION['role'] ?? '') !== 'admin') {
-    http_response_code(403);
-    require __DIR__ . '/../403.php';
-    exit;
-}
+export_require_admin($basePath);
 
 // Fetch class data with booking counts
 $sql = "
@@ -36,15 +34,29 @@ $where_clauses = [];
 $params = [];
 $types = "";
 
-if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+if (isset($_GET['start_date']) && $_GET['start_date'] !== '') {
+    $startDate = export_date($_GET['start_date']);
+    if (!$startDate) {
+        http_response_code(422);
+        exit('Invalid start date.');
+    }
     $where_clauses[] = "c.start_datetime >= ?";
-    $params[] = $_GET['start_date'] . ' 00:00:00';
+    $params[] = $startDate . ' 00:00:00';
     $types .= "s";
 }
-if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+if (isset($_GET['end_date']) && $_GET['end_date'] !== '') {
+    $endDate = export_date($_GET['end_date']);
+    if (!$endDate) {
+        http_response_code(422);
+        exit('Invalid end date.');
+    }
     $where_clauses[] = "c.start_datetime <= ?";
-    $params[] = $_GET['end_date'] . ' 23:59:59';
+    $params[] = $endDate . ' 23:59:59';
     $types .= "s";
+}
+if (isset($startDate, $endDate) && $startDate > $endDate) {
+    http_response_code(422);
+    exit('Start date must be before end date.');
 }
 
 if (!empty($where_clauses)) {
@@ -57,19 +69,39 @@ if (!empty($params)) $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Set headers for download
-header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=gym_schedule_export_' . date('Y-m-d') . '.csv');
+$options = new Options();
+$options->DEFAULT_ROW_STYLE->setFontSize(9);
+$options->DEFAULT_ROW_HEIGHT = 14;
+$options->setColumnWidth(8, 1, 5, 6, 7, 8);
+$options->setColumnWidth(22, 2);
+$options->setColumnWidth(38, 3);
+$options->setColumnWidth(18, 4);
+$writer = new Writer($options);
+$writer->openToBrowser('gym_schedule_report_' . date('Y-m-d') . '.xlsx');
 
-// Open output stream
-$output = fopen('php://output', 'w');
-// Add UTF-8 BOM for Excel compatibility with special characters
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
-// Column headers
-fputcsv($output, ['ID', 'Workout Title', 'Description', 'Date & Time', 'Max Capacity', 'Participants Joined']);
+$titleStyle = (new Style())->setFontBold()->setFontSize(14)->setFontColor(Color::WHITE)->setBackgroundColor(Color::DARK_BLUE);
+$metaStyle = (new Style())->setFontSize(10);
+$headerStyle = (new Style())->setFontBold()->setFontSize(9)->setFontColor(Color::WHITE)->setBackgroundColor(Color::BLUE);
+$writer->addRow(Row::fromValues(['MyGoToGym Schedule Report'], $titleStyle));
+$writer->addRow(Row::fromValues(['Generated', date('Y-m-d H:i'), 'Period', trim(($startDate ?? 'All time') . ' - ' . ($endDate ?? 'Today'))], $metaStyle));
+$writer->addRow(Row::fromValues([]));
+$writer->addRow(Row::fromValues([]));
+$writer->addRow(Row::fromValues(['ID', 'Workout title', 'Description', 'Date and time', 'Capacity', 'Booked', 'Available', 'Attendance'], $headerStyle));
 
 while ($row = $result->fetch_assoc()) {
-    fputcsv($output, [$row['id'], $row['title'], $row['description'], $row['start_datetime'], $row['capacity'], $row['booked']]);
+    $capacity = (int) $row['capacity'];
+    $booked = (int) $row['booked'];
+    $attendance = $capacity > 0 ? round(($booked / $capacity) * 100, 1) . '%' : '0%';
+    $writer->addRow(Row::fromValues([
+        (int) $row['id'],
+        export_safe_cell($row['title']),
+        export_safe_cell($row['description']),
+        date('Y-m-d H:i', strtotime($row['start_datetime'])),
+        $capacity,
+        $booked,
+        max(0, $capacity - $booked),
+        $attendance,
+    ]));
 }
-fclose($output);
+
+$writer->close();

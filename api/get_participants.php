@@ -2,12 +2,17 @@
 header('Content-Type: application/json');
 require 'db.php';
 
-if (!isset($_GET['class_id'])) {
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Login required.']);
+    exit;
+}
+if (!isset($_GET['class_id']) || !ctype_digit((string) $_GET['class_id'])) {
     echo json_encode([]);
     exit;
 }
 
-$class_id = intval($_GET['class_id']);
+$class_id = (int) $_GET['class_id'];
 
 // Fetch names of users who have a 'reserved' status for this class
 $stmt = $conn->prepare("

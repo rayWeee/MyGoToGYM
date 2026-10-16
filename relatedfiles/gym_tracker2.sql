@@ -147,6 +147,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `email` varchar(150) NOT NULL,
+  `pending_email` varchar(150) DEFAULT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('user','trainer','admin') DEFAULT 'user',

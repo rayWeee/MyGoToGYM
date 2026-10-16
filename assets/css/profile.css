@@ -26,6 +26,8 @@
 #password-strength { height: 5px; width: 100%; background: #222; border-radius: 5px; margin: 12px 0; overflow: hidden; }
 #strength-bar { height: 100%; width: 0%; transition: 0.3s; }
 .status-msg { text-align: center; margin-bottom: 15px; font-size: 0.9rem; }
+.pending-email { display: block; margin-top: 8px; color: var(--accent2); font-size: 0.85rem; overflow-wrap: anywhere; }
+.status-msg .verification-link { display: inline-block; margin-left: 4px; color: var(--accent2); }
 .success { color: #4cff88; }
 .error { color: #ff5c5c; }
 hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0; }

@@ -57,7 +57,7 @@ function setConsent(choice) {
 }
 
 function trackEvent(action) {
-    fetch('api/track_analytics.php', {
+    fetch('api/track_analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

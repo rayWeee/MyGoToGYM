@@ -58,32 +58,47 @@
             margin-bottom: 30px;
         }
         .offer-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 15px;
-            justify-content: center;
+            align-items: stretch;
             margin-top: 30px;
         }
+        .offer-actions form {
+            display: flex;
+            width: 100%;
+            height: 52px;
+            min-width: 0;
+            margin: 0;
+        }
         .offer-actions .btn {
-            flex: 1 1 0;
+            width: 100%;
+            height: 52px;
+            min-height: 52px;
+            box-sizing: border-box;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 14px 28px;
+            padding: 8px 14px;
             border-radius: 50px;
             text-decoration: none;
+            font: inherit;
+            font-size: 0.9rem;
             font-weight: 600;
+            line-height: 1.2;
             transition: 0.3s;
-            min-width: 0; /* Prevents long text from expanding the button width */
+            min-width: 0;
         }
         .offer-actions .btn-confirm {
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: #fff;
         }
         .offer-actions .btn-confirm:hover {
-            transform: translateY(-3px);
+            transform: none;
             opacity: 0.9;
         }
         .offer-actions .btn-cancel {
+            margin-top: 0;
             background: transparent;
             border: 1px solid var(--stroke);
             color: #fff;
@@ -91,12 +106,15 @@
         .offer-actions .btn-cancel:hover {
             background: rgba(255,255,255,0.08);
         }
+        .offer-actions .btn:hover {
+            transform: none !important;
+        }
 
         @media (max-width: 480px) {
             .offer-card { padding: 25px; }
             .offer-card h2 { font-size: 2rem; }
             .offer-card .price { font-size: 2.2rem; }
-            .offer-actions { flex-direction: column; gap: 10px; }
+            .offer-actions { grid-template-columns: 1fr; gap: 10px; }
             .offer-actions .btn { width: 100%; text-align: center; }
         }
     </style>
@@ -129,10 +147,10 @@
                 <?= $t['membership_terms'] ?>
             </p>
             <div class="offer-actions">
-                <form method="post" action="<?= $basePath ?>/api/buy_membership" style="flex: 1 1 0; margin: 0;">
+                <form method="post" action="<?= $basePath ?>/api/buy_membership">
                     <input type="hidden" name="plan" value="<?= htmlspecialchars($plan) ?>">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                    <button type="submit" class="btn btn-confirm" style="width: 100%; border: 0; cursor: pointer;">
+                    <button type="submit" class="btn btn-confirm">
                         <?= $t['confirm_purchase'] ?>
                     </button>
                 </form>

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #0b0b0f;">
+<html lang="<?= htmlspecialchars($current_lang) ?>" style="background-color: #0b0b0f;">
 <head>
 <meta charset="UTF-8">
 <title><?= $t['register'] ?></title>
-<link rel="icon" type="image/png" href="assets/images/logo.png">
+<link rel="icon" type="image/png" href="<?= $basePath ?>/assets/images/logo.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="assets/css/theme.css" rel="stylesheet">
-<link href="assets/css/nav.css" rel="stylesheet">
-<link href="assets/css/auth.css" rel="stylesheet">
+<link href="<?= $basePath ?>/assets/css/theme.css" rel="stylesheet">
+<link href="<?= $basePath ?>/assets/css/nav.css" rel="stylesheet">
+<link href="<?= $basePath ?>/assets/css/auth.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -19,12 +19,19 @@
 <div class="auth-wrapper">
 
 <div class="auth-card">
-<img src="assets/images/logo.png" alt="MyGoTo Fitness" class="auth-logo">
+<img src="<?= $basePath ?>/assets/images/logo.png" alt="MyGoTo Fitness" class="auth-logo">
 
 <h2><?= $t['register'] ?></h2>
 
 <?php if($error): ?>
 <div class="error"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($developmentVerificationLink)): ?>
+<div class="error" style="border-color: rgba(76, 255, 136, .45);">
+    <strong>Local development verification:</strong>
+    <a href="<?= htmlspecialchars($developmentVerificationLink) ?>" style="color: #8df7ad; text-decoration: underline;">Verify this account</a>
+</div>
 <?php endif; ?>
 
 <form method="post">
@@ -38,17 +45,13 @@
 <!-- PASSWORD -->
 <div class="password-wrapper">
 <input type="password" name="password" id="password" placeholder="<?= $t['password'] ?>" required>
-<span class="toggle-password" onclick="toggleVisibility(this, 'password')">
-    <i class="fa-solid fa-eye"></i>
-</span>
+<span class="toggle-password" role="button" tabindex="0" aria-label="Show password" onclick="toggleVisibility(this, 'password')" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleVisibility(this, 'password'); }">👁</span>
 </div>
 
 <!-- CONFIRM PASSWORD -->
 <div class="password-wrapper">
 <input type="password" name="confirm_password" id="confirm_password" placeholder="<?= $t['confirm_pass'] ?>" required>
-<span class="toggle-password" onclick="toggleVisibility(this, 'confirm_password')">
-    <i class="fa-solid fa-eye"></i>
-</span>
+<span class="toggle-password" role="button" tabindex="0" aria-label="Show password" onclick="toggleVisibility(this, 'confirm_password')" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleVisibility(this, 'confirm_password'); }">👁</span>
 </div>
 
 <div id="match-msg"></div>
@@ -76,17 +79,11 @@
 <script>
 function toggleVisibility(btn, inputId) {
     const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
     const isPassword = input.type === "password";
 
     input.type = isPassword ? "text" : "password";
-    if (isPassword) {
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
+    btn.textContent = isPassword ? '🙈' : '👁';
+    btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
 }
 
 const passwordInput = document.getElementById('password');

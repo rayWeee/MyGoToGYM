@@ -23,6 +23,7 @@ require_once __DIR__ . '/api/csrf.php';
 $error = '';
 $name = '';
 $email = '';
+$developmentVerificationLink = '';
 
 if($_SERVER['REQUEST_METHOD']==='POST'){
     if(!check_csrf($_POST['csrf_token'])){
@@ -65,7 +66,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
                         header("Location: " . $basePath . "/login?registered=1");
                         exit;
                     } else {
-                        $error = "Registration successful, but verification email failed to send.";
+                        if (LOCAL_VERIFICATION_FALLBACK) {
+                            $error = "Registration successful. Email delivery is unavailable locally, so use the verification link below.";
+                            $developmentVerificationLink = $verify_link;
+                        } else {
+                            $error = "Registration successful, but verification email failed to send.";
+                        }
                         $showResend = true;
                         $resendEmail = $email;
                     }

@@ -50,6 +50,12 @@ try {
     // Use the centralized Mailer class to send the email
     if (\App\Mailer::sendVerificationEmail($email, $name, $verify_link, $current_lang)) {
         echo json_encode(['success' => true, 'message' => 'Verification email resent successfully!']);
+    } elseif (LOCAL_VERIFICATION_FALLBACK) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Email delivery is unavailable locally. Use the local verification link.',
+            'verification_link' => $verify_link
+        ]);
     } else {
         // Mailer::sendVerificationEmail logs its own errors, so just return a generic failure message
         echo json_encode(['success' => false, 'message' => 'Failed to resend verification email.']);

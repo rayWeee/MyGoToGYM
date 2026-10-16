@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 include 'db.php';
+require_once 'csrf.php';
 
 // Security: Use session ID, not the ID sent from the browser
 if(!isset($_SESSION['user_id'])){
@@ -8,15 +9,26 @@ if(!isset($_SESSION['user_id'])){
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
-$class_id = intval($data['class_id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_array($data) || !check_csrf($data['csrf_token'] ?? '')) {
+    http_response_code(403);
+    die(json_encode(["success" => false, "message" => "Invalid security token"]));
+}
+$class_id = filter_var($data['class_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+if (!$class_id) {
+    die(json_encode(["success" => false, "message" => "Invalid class"]));
+}
 $user_id = $_SESSION['user_id'];
 
+$conn->begin_transaction();
+try {
+
 // CHECK IF EVENT IS IN THE PAST
-$stmt_check = $conn->prepare("SELECT start_datetime FROM classes WHERE id = ?");
+$stmt_check = $conn->prepare("SELECT start_datetime, capacity FROM classes WHERE id = ? FOR UPDATE");
 $stmt_check->bind_param("i", $class_id);
 $stmt_check->execute();
 $class_row = $stmt_check->get_result()->fetch_assoc();
 if(!$class_row || strtotime($class_row['start_datetime']) < time()){
+    $conn->rollback();
     die(json_encode(["success" => false, "message" => "This workout has already started or passed."]));
 }
 
@@ -27,10 +39,12 @@ $mem_stmt->execute();
 $user_mem = $mem_stmt->get_result()->fetch_assoc();
 
 if (!$user_mem || empty($user_mem['membership_expiry']) || strtotime($user_mem['membership_expiry']) < time()) {
+    $conn->rollback();
     die(json_encode(["success" => false, "message" => "An active membership is required to reserve classes."]));
 }
 
 if (!in_array($user_mem['membership_type'], ['advanced', 'pro'])) {
+    $conn->rollback();
     die(json_encode(["success" => false, "message" => "Your current plan does not include class reservations. Please upgrade to Advanced or Pro."]));
 }
 
@@ -43,7 +57,8 @@ $check->bind_param("ii", $user_id, $class_id);
 $check->execute();
 
 if($check->get_result()->num_rows > 0){
-die(json_encode([
+    $conn->rollback();
+    die(json_encode([
 "success"=>false,
 "message"=>"You already reserved this workout"
 ]));
@@ -61,7 +76,8 @@ $cap_stmt->bind_param("i", $class_id);
 $cap_stmt->execute();
 $cap = $cap_stmt->get_result()->fetch_assoc();
 
-if($cap['booked'] >= $cap['capacity']){
+if(!$cap || $cap['booked'] >= $cap['capacity']){
+    $conn->rollback();
 die(json_encode([
 "success"=>false,
 "message"=>"Class is full"
@@ -77,13 +93,20 @@ VALUES(?,?)
 $stmt->bind_param("ii",$class_id,$user_id);
 
 if ($stmt->execute()) {
+    $conn->commit();
     echo json_encode([
         "success"=>true,
         "message"=>"Reserved successfully",
     ]);
 } else {
+    $conn->rollback();
     echo json_encode([
         "success"=>false,
         "message"=>"Reservation failed."
     ]);
+}
+} catch (mysqli_sql_exception $e) {
+    $conn->rollback();
+    error_log('Reservation failed: ' . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Reservation failed."]);
 }

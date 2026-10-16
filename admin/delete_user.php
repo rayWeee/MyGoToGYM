@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require_once __DIR__ . '/../api/db.php';
+require_once __DIR__ . '/../api/csrf.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
     echo json_encode(["success"=>false,"message"=>"Access denied"]);
@@ -8,6 +9,11 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_array($data) || !check_csrf($data['csrf_token'] ?? '')) {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => "Invalid security token"]);
+    exit;
+}
 $id = intval($data['user_id'] ?? 0);
 
 if ($id <= 0) {

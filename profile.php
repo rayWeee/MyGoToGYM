@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/api/csrf.php';
 
-$stmt = $conn->prepare("SELECT name, email, phone, role, membership_type, membership_expiry FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, email, pending_email, phone, role, membership_type, membership_expiry FROM users WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();

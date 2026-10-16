@@ -43,7 +43,7 @@ class Mailer {
             $mail->Username   = SMTP_USERNAME; 
             $mail->Password   = SMTP_PASSWORD; 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
+            $mail->Port       = SMTP_PORT;
             $mail->CharSet    = 'UTF-8'; // Ensure proper character encoding for international characters
 
             // Use the configured SMTP_USERNAME as the 'From' address
@@ -70,6 +70,61 @@ class Mailer {
             return $mail->send();
         } catch (Exception $e) {
             error_log("Mailer Error: {$mail->ErrorInfo}");
+            return false;
+        }
+    }
+
+    public static function sendEmailChangeVerification($email, $name, $link, $lang = 'en') {
+        $contentByLanguage = [
+            'en' => [
+                'subject' => 'Confirm your new MyGoToGym email address',
+                'heading' => 'Confirm your new email address',
+                'body' => 'Hello %s, a request was made to change the email address on your MyGoToGym account. Confirm this new address to apply the change. Your current email will remain active until you confirm.',
+                'button' => 'Confirm email address',
+                'footer' => 'If you did not request this change, you can ignore this email. Your current address will remain unchanged.'
+            ],
+            'lv' => [
+                'subject' => 'Apstipriniet savu jauno MyGoToGym e-pasta adresi',
+                'heading' => 'Apstipriniet jauno e-pasta adresi',
+                'body' => 'Sveiki, %s! Tika pieprasīts mainīt jūsu MyGoToGym konta e-pasta adresi. Apstipriniet jauno adresi, lai veiktu izmaiņas. Pašreizējā adrese būs aktīva līdz apstiprināšanai.',
+                'button' => 'Apstiprināt e-pasta adresi',
+                'footer' => 'Ja nepieprasījāt šīs izmaiņas, ignorējiet šo e-pastu. Pašreizējā adrese netiks mainīta.'
+            ],
+            'ru' => [
+                'subject' => 'Подтвердите новый адрес MyGoToGym',
+                'heading' => 'Подтвердите новый адрес электронной почты',
+                'body' => 'Здравствуйте, %s! Поступил запрос на изменение адреса электронной почты вашей учетной записи MyGoToGym. Подтвердите новый адрес, чтобы применить изменение. Текущий адрес останется активным до подтверждения.',
+                'button' => 'Подтвердить адрес',
+                'footer' => 'Если вы не запрашивали это изменение, проигнорируйте письмо. Текущий адрес останется без изменений.'
+            ]
+        ];
+
+        $content = $contentByLanguage[$lang] ?? $contentByLanguage['en'];
+        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $safeLink = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
+        $body = sprintf($content['body'], $safeName);
+        $plainBody = sprintf($content['body'], $name);
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = SMTP_HOST;
+            $mail->SMTPAuth = true;
+            $mail->Username = SMTP_USERNAME;
+            $mail->Password = SMTP_PASSWORD;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = SMTP_PORT;
+            $mail->CharSet = 'UTF-8';
+            $mail->setFrom(SMTP_USERNAME, 'MyGoToGym');
+            $mail->addAddress($email, $name);
+            $mail->isHTML(true);
+            $mail->Subject = $content['subject'];
+            $mail->Body = "<div style='background:#0b0b0f;color:#fff;padding:40px;font-family:sans-serif;border-radius:20px;text-align:center'><h1 style='color:#7c5cff'>{$content['heading']}</h1><p style='font-size:1.1rem'>{$body}</p><a href='{$safeLink}' style='background:linear-gradient(135deg,#7c5cff,#00d4ff);color:#fff;padding:15px 30px;text-decoration:none;border-radius:50px;font-weight:bold;display:inline-block'>{$content['button']}</a><p style='margin-top:30px;color:rgba(255,255,255,.5);font-size:.85rem'>{$content['footer']}</p></div>";
+            $mail->AltBody = $plainBody . "\n\n" . $link . "\n\n" . $content['footer'];
+
+            return $mail->send();
+        } catch (Exception $e) {
+            error_log("Email change verification mail failed: {$mail->ErrorInfo}");
             return false;
         }
     }
@@ -109,7 +164,7 @@ class Mailer {
             $mail->Username   = SMTP_USERNAME;
             $mail->Password   = SMTP_PASSWORD;
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
+            $mail->Port       = SMTP_PORT;
             $mail->CharSet    = 'UTF-8';
 
             $mail->setFrom(SMTP_USERNAME, 'MyGoToGym');

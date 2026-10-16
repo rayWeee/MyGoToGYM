@@ -6,21 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$plan = $_GET['plan'] ?? '';
-$user_id = $_SESSION['user_id'];
-$valid_plans = ['basic', 'advanced', 'pro'];
-
-if (in_array($plan, $valid_plans)) {
-    $expiry = date('Y-m-d H:i:s', strtotime('+31 days'));
-    $stmt = $conn->prepare("
-        UPDATE users
-        SET membership_type = ?, membership_expiry = ?
-        WHERE id = ?
-    ");
-    $stmt->bind_param("ssi", $plan, $expiry, $user_id);
-    $stmt->execute();
-
-    header("Location: " . $basePath . "/homepage?success=1");
-} else {
-    header("Location: " . $basePath . "/homepage?error=invalid_return");
-}
+// A browser query parameter is not payment proof. Membership changes must be made
+// by a verified payment webhook (or the authenticated membership workflow).
+header("Location: " . $basePath . "/homepage?error=invalid_return");
+exit;

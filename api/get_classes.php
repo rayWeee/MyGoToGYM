@@ -54,7 +54,7 @@ $events = [];
 
 while ($row = $result->fetch_assoc()) {
     $dbColor = !empty($row["color"]) ? $row["color"] : "Blue";
-    $hexColor = $colorMap[$dbColor] ?? $dbColor; // Use map, fallback to string if already hex
+    $hexColor = $colorMap[$dbColor] ?? $colorMap['Blue'];
     
     $events[] = [
         "id" => $row["id"],

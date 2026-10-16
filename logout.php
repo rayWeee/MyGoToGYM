@@ -1,6 +1,9 @@
 <?php
-session_start();
-session_unset();
+require_once __DIR__ . '/api/session.php';
+start_app_session();
+
+$_SESSION = [];
+setcookie(session_name(), '', time() - 42000, '/');
 session_destroy();
 
 // If accessed directly with .php extension, redirect to clean URL

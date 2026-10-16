@@ -1,6 +1,5 @@
 <?php
-session_start();
-include '../db.php';
+require_once __DIR__ . '/../api/db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role']!=='admin') {
     echo json_encode(['success'=>false,'message'=>'Access denied']);

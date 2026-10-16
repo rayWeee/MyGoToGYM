@@ -5,16 +5,24 @@
  * Works for the PHP built-in server and for Apache rewrites in subfolders.
  */
 
-$scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-
-$basePath = rtrim(str_replace('/router.php', '', $scriptName), '/');
+$appRoot = str_replace('\\', '/', realpath(__DIR__) ?: __DIR__);
+$documentRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: '');
+$basePath = ($documentRoot !== '' && strpos($appRoot, $documentRoot) === 0)
+    ? rtrim(substr($appRoot, strlen($documentRoot)), '/')
+    : '';
 if ($basePath !== '' && strpos($requestPath, $basePath) === 0) {
     $requestPath = substr($requestPath, strlen($basePath)) ?: '/';
 }
 
 $uri = '/' . trim(rawurldecode($requestPath), '/');
 $route = trim($uri, '/');
+
+// Language-prefixed public URLs: /lv/homepage, /ru/index, /en/contacts.
+if (preg_match('#^(en|lv|ru)(?:/(.*))?$#', $route, $matches)) {
+    $_GET['lang'] = $matches[1];
+    $route = trim($matches[2] ?? '', '/');
+}
 
 if ($route === '') {
     require __DIR__ . '/homepage.php';
@@ -60,7 +68,8 @@ $adminOnlyPrefixes = ['admin/', 'api/admin_', 'export/'];
 foreach ($adminOnlyPrefixes as $prefix) {
     if (strpos($route, $prefix) === 0) {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            require_once __DIR__ . '/api/session.php';
+            start_app_session();
         }
 
         if (($_SESSION['role'] ?? '') !== 'admin') {
